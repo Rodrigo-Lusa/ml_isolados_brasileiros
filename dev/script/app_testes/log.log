@@ -1,7 +1,0 @@
-14/08/2026 18:52:45 | DEBUG | Iniciando a execução do script...
-14/08/2026 18:52:45 | ERROR | Falha de validação capturada: 1 validation error for pagina_inicial
-mensagem
-  Input should be a valid string [type=string_type, input_value=10, input_type=int]
-    For further information visit https://errors.pydantic.dev/2.13/v/string_type
-14/08/2026 18:52:45 | INFO | Página inicial carregada com a mensagem: Página inicial carregada com sucesso.
-14/08/2026 18:52:45 | SUCCESS | Função executada perfeitamente.
