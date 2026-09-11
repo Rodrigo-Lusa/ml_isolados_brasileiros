@@ -1,9 +1,0 @@
-__pycache__/
-.ipynb_checkpoints/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-credentials.json
-token.json
-# praticas_old/
