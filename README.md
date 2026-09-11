@@ -1,158 +1,60 @@
-# Disciplina: Python Machine Learning – v01/26
+# ml_isolados_brasileiros
 
-##	Coordenador:
-- Guilherme Ferreira Silveira.
-
-##	Professores:
-- Guilherme Ferreira Silveira
-
-##	Monitores:
-- 
-
-##	Carga horária:
-60h/atividade presencial.
-4 créditos.
-
-##	Mestrado e Doutorado:
-Mestrado e Doutorado
-
-##	Pré-requisitos:
-Python Básico EAD ou Presencial
-
-##	Ementa:
-A disciplina tem como objetivo instrumentalizar os alunos em conceitos intermediários e avançados da linguagem de programação Python, em um contesto de projetos baseados em perguntas que utilizam Machine Learning (ML). Para tanto, serão abordados os conhecimentos iniciais, determinando em quais perguntas são aplicadas técnicas de ML e em quais objetivos podem ser desenvolvidos com essas técnicas. O próximo passo é quanto a aquisição dos bancos de dados, disponibilidade de informações, estruturação e balanceamento. Seguimos com a divisão da base de dados em treinamento, ajustes, validação e testes, etapa crucial para todo projeto de ML. Uma vez obtidos os bancos, serão realizadas estruturação, análises exploratórias e seleção das variáveis mais relevantes ao modelo. Com o banco pronto, passamos a seleção de algoritmos, baseados em diferentes abordagens e da pergunta a ser explorada. Com essas etapas finalizadas, passamos ao treinamento dos algoritmos selecionados, ajustes e correções dos hiperparâmetros dos modelos e validação, usando as métricas determinadas pelas perguntas iniciais. Finalmente, realizaremos testes estatísticos para determinar a qualidade de nossos modelos. Uma vez obtido o modelo, passamos a etapa de disponibilização e monitoramento desses modelos em sistemas online, com o intuito de explorar a capacidade escalável do Python.
-Na trajetória pela disciplina será utilizado e estudado conceitos matemáticos e estatísticos, bem como de programação de softwares e bibliotecas específicas do Python, como:
-- Pandas;
-- Numpy;
-- SQLite;
-- Scikit-learning
-- Statsmodels;
-- Tensorflow;
-- Keras;
-- GridSearchCV
-- PyTest
-- Pipeline e Agregat
-- Streamlit
-- Matplotlib
-- Seaborn
-- Smote (Oversampling)
+Projeto de mestrado: comparação dos resistomas (conjunto de genes de resistência) de isolados clínicos e de genomas bacterianos obtidos de metagenomas ambientais (MAGs), com foco no conceito de "Uma Só Saúde".
 
 
-##	Bibliografia:
-1.	An Introduction to Statistical Learning – Gareth James (Author).
-2.	Python Data Science Handbook: Essential Tools for Working with Data – Jake VanderPlas (Author).
-3.	Statistics for Life Sciences – Myra L. Samuels (Author).
-4.	Python's documentation. https://www.python.org/doc/
-5.	PEP 8 -- Style Guide for Python Code. https://www.python.org/dev/peps/pep-0008/
-6.	Make code slow and complex. Silveira. https://medium.com/@gfsilveira/make-code-slow-and-complex-222c3c2cd316
+## Pré-processamento dos dados
 
-##	Natureza:
-Teórica e prática
+### Obtenção dos genomas
+Os genomas bacterianos utilizados neste estudo foram obtidos, em
+03/02/2026, a partir de dois repositórios públicos: BV-BRC v3.58.4
+(https://www.bv-brc.org) e NCBI Pathogen Detection
+(https://www.ncbi.nlm.nih.gov/pathogens). No BV-BRC, foram aplicados os filtros de
+origem geográfica (Brasil), hospedeiro humano e classificação de qualidade "good",
+resultando em 4.310 genomas. No NCBI Pathogen Detection, foram aplicados os
+filtros de origem geográfica (Brasil) e hospedeiro humano, resultando em 6.646
+genomas. Após a padronização dos metadados (ano de coleta, espécie e fonte de
+isolamento) e remoção de duplicatas (mesmo `Assembly_id`) entre as duas bases, obteve-se um total de
+7.068 isolados bacterianos brasileiros únicos.
 
-##	Observações:
-É necessário, como pré-requisito para a disciplina, que o aluno tenha sido aprovado em Python Básico (modelo EAD) ou Python Básico Presencial.
+- **NCBI Datasets** (v18.16.0) - download
+- **Prodigal** (v2.6.3) — predição de genes codificadores de proteína
+- **RGI** (v6.0.5) — identificação de genes de resistência antimicrobiana, usando o banco de dados CARD (v4.0.1)
+- **geNomad** (v1.12.0) — classificação de contigs em cromossomal, plasmidial ou viral, e identificação de elementos genéticos móveis
+- **abricate** (v1.4.0) - anotação de genes de virulência com base no banco de dados VFDB (03/04/2026)
 
-##	Período: 03/08 a 29/10:
-Serão 16 aulas, segundas-feiras das 08h às 12h. E terças-feiras das 13h às 17h.
+### Obtenção das matrizes
+As matrizes de presença/ausência de genes de resistência e as tabelas de anotação são obtidas com o **ARGOS**, biblioteca própria que criei com o intuito de me ajudar a analisar os resistomas, instalada em modo editável (`pip install -e .`) em um ambiente conda. 
+No entanto, tinha entendido errado o conceito de classes e métodos em python. Por isso, os notebooks que importam `argos` usam métodos e funções que não podem ser feitas sem esse ambiente.
 
-1 – O que é Machine Learning?
+## Ideia do projeto
 
-2 – Machine Learning é para mim?
+### Clusterização
 
-3 – Objetivos:
-- Determine o que é sucesso na obtenção de um modelo;
-- Metas com base nos objetivos específicos;
+Objetivo: agrupar os genomas (isolados clínicos e, futuramente, MAGs ambientais) em grupos de risco de resistência, a partir de um conjunto de features derivadas do resistoma — sem usar rótulos pré-definidos.
 
-4 – Aquisição dos dados:
-- Disponibilidade;
-- Estruturação;
-- Balanceamento;
-- Pandas;
-- Numpy;
-- SQLite;
-- Smote;
+Colunas que pretendo usar na tabela de features:
 
-5 – Algoritmos:
-- k-Means;
-- k-NN;
-- Logistic Regression;
-- SVM;
-- Decision Trees;
-- Random Forests;
-- Naive Bayes;
-- Simple/Multiple Linear Regression;
-- Neural Networks 
+- `n_genes_cromossomal` — número de genes AMR em contigs cromossomais
+- `mdr_score_cromossomal` — número de classes de drogas distintas cobertas pelos genes cromossomais
+- `n_genes_plasmidial` — número de genes AMR em contigs plasmidiais
+- `mdr_score_plasmidial` — número de classes de drogas distintas cobertas pelos genes plasmidiais
+- `pct_contigs_cromossomal` / `pct_contigs_plasmidial` — percentual de contigs de cada tipo
+- `pct_plasmidial_amr` — percentual de contigs plasmidiais com pelo menos um gene AMR
+- `pct_plasmidial_conjugacao_amr` — percentual de contigs plasmidiais com AMR e maquinaria de conjugação simultaneamente
+- `n_genes_plasmidial_conjugativo` — genes AMR em plasmídeos conjugativos (indicador de mobilidade)
+- `n_plasmidial_<classe_de_droga>` — matriz de contagem de genes plasmidiais por classe de droga (ex.: `n_plasmidial_beta-lactam`)
+- `vfdb_<>` — matriz de contagem de genes de virulência por classe (ex.: `vfdb_adherence`, `vfdb_biofilm`)
+- `tem_plasmidio` — flag indicando se o genoma tem pelo menos um contig plasmidial
+- `gc_diff_plasmid_cromossomo` — diferença de %GC entre contigs plasmidiais e cromossomais
+- `tnf_divergence_plasmid_cromossomo` — divergência de frequência de tetranucleotídeos (TNF) entre contigs plasmidiais e cromossomais
 
-6 – Divisão da base de dados:
-- Treino;
-- Ajuste;
-- Validação;
-- Teste;
-- Scikit-learning
+A ideia central é que o agrupamento não precisa — e talvez não deva — coincidir com o **WHO_Priority**: a lista de patógenos prioritários da Organização Mundial da Saúde, que classifica *espécies* bacterianas inteiras em níveis de prioridade (Critical / High / Medium) para orientar pesquisa e desenvolvimento de novos antibióticos. Essa classificação é feita por espécie, mas dentro de uma mesma espécie o perfil de resistência de cada isolado pode variar bastante — nem toda *E. coli*, por exemplo, carrega o mesmo nível de resistência. Além disso, WHO_Priority não é aplicável a MAGs ambientais (que muitas vezes nem têm identificação confiável de espécie), o que inviabiliza a comparação direta entre isolados clínicos e metagenomas se o alvo for baseado em espécie. O broblema do meu projeto era que ao reduzir a dimensionalidade da tabela de genes com PCoA, o número desigual de genomas por espécie e o padrão do genoma core inviezam a análise, então foi sugerido na banca de acompanhamento tentar remover esse efeito de espécie.
 
-7 – Estruturação, Análise Exploratória de Dados e Seleção de Variáveis:
-- Tabela e Frequência e Medidas Resumo;
-- Correlação;
-- Redução de Dimensionalidade; 
-- Statsmodels;
+### Classificação
 
-8 – Seleção de Algoritmos:
-- Classificação;
-- Regressão;
-- Clusterização;
-- Redes Neurais;
-- Tensorflow;
-- Keras;
+Classificar os genomas segundo o alvo definido pela clusterização acima (prever o grupo de risco um genoma pertence, a partir das mesmas features).
 
-9 – Treinamento:
-- Normalização e padronização;
-- Prática de treinamento dos algoritmos;
+### Regressão
 
-10 – Ajuste e Debug:
-- Ajuste de hiperparâmetros;
-- Correção de erros do modelo treinado (tamanho do banco, seleção de variáveis etc.);
-- GridSearchCV
-
-11 – Validação:
-- Matrix de Confusão;
-- Métricas de Erro Padrão;
-
-12 – Teste:
-- Teste de hipótese entre predito e observado;
-
-13 – Produção (back end):
-- Programação Orientada a Objetos;
-- Testes automatizados;
-- CI/CD;
-- PyTest
-- Pipeline e Agregat
-
-14 – Experimento da vida real (front end): 
-- Teste seu modelo em nova amostragem;
-- Streamlit
-
-15 – Monitoramento e manutenção:
-- Quando um modelo deve ser substituído;
-
-
-## Avaliação:
-Projeto de um sistema de predição com base em algoritmos de Machine Learning.
-
-Modo de entrega: Sistema de predição com base em algoritmos de Machine Learning.
-
-Prazo: o commit deve ser feito até o dia <span style="color:red">17/04<br>
-NÃO VAMOS POSTERGAR</span><br><br>
-
-Aos alunos do PPGBB, Regimento no Item 6.2, pág. 16, para a conversão das porcentagens das notas em conceitos, seguindo tabela adaptada abaixo:
-<br><br>
-- Conceito A – Projeto funcionando;
-- Conceito B – Projeto existe, com AED, deploy ou testagem parcial;
-- Conceito C – Projeto existe, com AED, deploy e testagem parcial;
-- Conceito D – Não, não fiz nada;
- 
-
-##	Número máximo de alunos:
-12 alunos.
-
-##	Aceita alunos externos:
-Sim
+Ainda não decidi.
