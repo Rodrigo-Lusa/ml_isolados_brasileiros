@@ -1,0 +1,10 @@
+# Ignore everything inside data/
+data/*
+
+# Keep processed data
+!data/processed/
+!data/processed/**
+
+# Keep images
+!data/images/
+!data/images/**

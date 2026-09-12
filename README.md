@@ -23,6 +23,12 @@ isolamento) e remoção de duplicatas (mesmo `Assembly_id`) entre as duas bases,
 - **geNomad** (v1.12.0) — classificação de contigs em cromossomal, plasmidial ou viral, e identificação de elementos genéticos móveis
 - **abricate** (v1.4.0) - anotação de genes de virulência com base no banco de dados VFDB (03/04/2026)
 
+### Filtragem de metadados
+Em `notebooks/00_ajuste_metadados.ipynb` filtrei e ajustei a tabela de metadados para o final de 7038 genomas, com melhor separação de `source_type` e classificação OMS.
+
+![alt text](data/images/bubble_plot.png)
+
+
 ### Obtenção das matrizes
 As matrizes de presença/ausência de genes de resistência e as tabelas de anotação são obtidas com o **ARGOS**, biblioteca própria que criei com o intuito de me ajudar a analisar os resistomas, instalada em modo editável (`pip install -e .`) em um ambiente conda. 
 No entanto, tinha entendido errado o conceito de classes e métodos em python. Por isso, os notebooks que importam `argos` usam métodos e funções que não podem ser feitas sem esse ambiente.
