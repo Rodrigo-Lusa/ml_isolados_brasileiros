@@ -37,25 +37,7 @@ No entanto, tinha entendido errado o conceito de classes e métodos em python. P
 
 ### Clusterização
 
-Objetivo: agrupar os genomas (isolados clínicos e, futuramente, MAGs ambientais) em grupos de risco de resistência, a partir de um conjunto de features derivadas do resistoma — sem usar rótulos pré-definidos.
-
-Colunas que pretendo usar na tabela de features:
-
-- `n_genes_cromossomal` — número de genes AMR em contigs cromossomais
-- `mdr_score_cromossomal` — número de classes de drogas distintas cobertas pelos genes cromossomais
-- `n_genes_plasmidial` — número de genes AMR em contigs plasmidiais
-- `mdr_score_plasmidial` — número de classes de drogas distintas cobertas pelos genes plasmidiais
-- `pct_contigs_cromossomal` / `pct_contigs_plasmidial` — percentual de contigs de cada tipo
-- `pct_plasmidial_amr` — percentual de contigs plasmidiais com pelo menos um gene AMR
-- `pct_plasmidial_conjugacao_amr` — percentual de contigs plasmidiais com AMR e maquinaria de conjugação simultaneamente
-- `n_genes_plasmidial_conjugativo` — genes AMR em plasmídeos conjugativos (indicador de mobilidade)
-- `n_plasmidial_<classe_de_droga>` — matriz de contagem de genes plasmidiais por classe de droga (ex.: `n_plasmidial_beta-lactam`)
-- `vfdb_<>` — matriz de contagem de genes de virulência por classe (ex.: `vfdb_adherence`, `vfdb_biofilm`)
-- `tem_plasmidio` — flag indicando se o genoma tem pelo menos um contig plasmidial
-- `gc_diff_plasmid_cromossomo` — diferença de %GC entre contigs plasmidiais e cromossomais
-- `tnf_divergence_plasmid_cromossomo` — divergência de frequência de tetranucleotídeos (TNF) entre contigs plasmidiais e cromossomais
-
-A ideia central é que o agrupamento não precisa — e talvez não deva — coincidir com o **WHO_Priority**: a lista de patógenos prioritários da Organização Mundial da Saúde, que classifica *espécies* bacterianas inteiras em níveis de prioridade (Critical / High / Medium) para orientar pesquisa e desenvolvimento de novos antibióticos. Essa classificação é feita por espécie, mas dentro de uma mesma espécie o perfil de resistência de cada isolado pode variar bastante — nem toda *E. coli*, por exemplo, carrega o mesmo nível de resistência. Além disso, WHO_Priority não é aplicável a MAGs ambientais (que muitas vezes nem têm identificação confiável de espécie), o que inviabiliza a comparação direta entre isolados clínicos e metagenomas se o alvo for baseado em espécie. O broblema do meu projeto era que ao reduzir a dimensionalidade da tabela de genes com PCoA, o número desigual de genomas por espécie e o padrão do genoma core inviezam a análise, então foi sugerido na banca de acompanhamento tentar remover esse efeito de espécie.
+Objetivo: agrupar os genomas (isolados clínicos e, futuramente, MAGs ambientais) em grupos de risco de resistência, a partir de um conjunto de features derivadas do resistoma, sem usar os genes/alelos específicamente.
 
 ### Classificação
 

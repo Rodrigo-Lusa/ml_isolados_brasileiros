@@ -8,3 +8,6 @@ data/*
 # Keep images
 !data/images/
 !data/images/**
+
+# Ignore reports
+reports/*
