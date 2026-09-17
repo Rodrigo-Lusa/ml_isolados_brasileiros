@@ -6,7 +6,7 @@ services:
             context: .
         container_name: python-ml
         volumes:
-            - ./../script:/usr/src/myapp
+            - ./../..:/usr/src/myapp
         networks:
             - default
         ports:

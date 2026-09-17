@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose -f ./python_compose.yml up
+docker compose -f ./python_compose.yml up
