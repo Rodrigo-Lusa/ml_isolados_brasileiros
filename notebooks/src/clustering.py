@@ -10,13 +10,13 @@ aqui o construtor aceita uma LISTA de features (N >= 2), porque perfil de
 risco (resistência + mobilidade) precisa de várias colunas ao mesmo tempo,
 não dá pra reduzir a um par sem perder informação.
 
-Mesmo espírito da original: grid search manual + validação cruzada via
-Silhouette (`silhouette_scorer_func`), métricas de qualidade interna
-(Silhouette/Calinski-Harabasz/Davies-Bouldin), plots.
+- grid search manual
+- validação cruzada via Silhouette (`silhouette_scorer_func`) 
+- métricas de qualidade interna (Silhouette/Calinski-Harabasz/Davies-Bouldin)
+- plots
 
 `testar_modelo` (qui² + ARI treino x teste) foi PORTADA da original quase sem mudança de lógica --
-`KMeans.predict`/`NearestCentroid`/`KNeighborsClassifier` aceitam N colunas do mesmo jeito que aceitam
-2, só troca `self.df[[c1, c2]]` por `self.df[self.features]`.
+`KMeans.predict`/`NearestCentroid`/`KNeighborsClassifier` aceitam N colunas por `self.df[self.features]`.
 
 Diferenças deliberadas em relação à original:
 - Sem ARI/AMI contra uma coluna `classe` em `cross_validation`/`__calcular_metricas` -- aqui não há
@@ -64,14 +64,13 @@ def silhouette_scorer_func(estimator, X) -> float:
 class Clustering:
     """
     Clustering multivariado com busca de hiperparâmetros guiada por
-    Silhouette (validação cruzada) -- generalização pra N features da
+    Silhouette (cross-validation) -- generalização pra N features da
     classe bivariada usada na disciplina Python/ML.
 
         Parâmetros
         ----------
         features : list[str]
-            Colunas de `df` usadas no clustering (N >= 2). `df` já deve
-            vir sem NaN nessas colunas (ver structuring/fillna antes).
+            Colunas de `df` usadas no clustering (N >= 2).
         df : pd.DataFrame
             1 linha por genoma.
         modelo : str
