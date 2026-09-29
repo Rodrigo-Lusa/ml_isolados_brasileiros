@@ -7,4 +7,4 @@ data/*
 
 # Keep images
 !data/images/
-!data/images/**
+!data/images/**__pycache__/
