@@ -6,30 +6,6 @@ https://github.com/Laboratorio-de-Analise-de-Dados/disciplina_python_ml,
 dev/script/aulas_teoricas/src/classifier.py. Mesmo pipeline (KNN/SVM/RF/GBM/NB/NN, cada um com
 ColumnTransformer + VarianceThreshold + SelectKBest + GridSearchCV(StratifiedKFold, scoring=accuracy)),
 mesma forma de reportar (accuracy/precision/recall/F1, matriz de confusão, variáveis selecionadas).
-
-Adaptações em relação à original:
-- Alvo configurável (`target`, default `"Risco"`) em vez de `"classe"` fixo -- a coluna alvo aqui é a
-  categoria de risco derivada dos clusters de `12_v1_clusterizacao_risco.ipynb` (ver notebook de
-  classificação, ainda não escrito), não um dataset didático já rotulado.
-- `class_weight="balanced"` em SVM e Random Forest -- os 2 únicos dos 6 modelos com esse parâmetro
-  nativo no scikit-learn. Motivo: a discussão que levou a este arquivo já identificou que "Baixo"
-  tende a virar a classe MAJORITÁRIA disparada (a maioria dos genomas High/Medium/Bin não tem carga
-  beta-lactâmica -- ver `12_v1_clusterizacao_risco.ipynb`, seção 10), então treinar sem correção de peso
-  tende a colapsar pra sempre prever a classe majoritária. `KNeighborsClassifier`/
-  `GradientBoostingClassifier`/`GaussianNB`/`MLPClassifier` NÃO têm `class_weight` nativo -- se o
-  desbalanceamento continuar um problema depois de testar estes 6, a próxima ferramenta é
-  reamostragem (SMOTE) antes do `.fit()`, não um parâmetro do estimador -- fora de escopo aqui de
-  propósito, ver conversa/notebook de clusterização pra contexto.
-- `__preprocessador`: a original monta a lista de colunas NUMÉRICAS a partir de `self.df` inteiro, sem
-  excluir `"classe"` (só a lista de colunas CATEGÓRICAS excluía). Funcionava na prática porque o alvo
-  didático era string (`select_dtypes(["number"])` já excluía sozinho); aqui excluo `target`
-  explicitamente dos dois lados -- se `Risco` algum dia virar código numérico (0/1/2) em vez de string,
-  a original quebraria (`ColumnTransformer` tentaria selecionar uma coluna que não existe mais em
-  `self.X` na hora do fit).
-- `classify()`: os 6 blocos `if modelo == "..."` (idênticos exceto qual `__<modelo>_classify()` chamar)
-  viraram um dict de despacho -- mesmo comportamento, menos repetição.
-- Resto do pipeline (pré-processamento/seleção de variável/grid search/relatório) sem mudança de
-  lógica, só apontado pra `target` em vez de `"classe"`.
 """
 
 # Importando modelos
@@ -85,8 +61,7 @@ class Classifier:
         df : pd.DataFrame
             DataFrame contendo as features e a coluna alvo.
         target : str
-            Nome da coluna alvo (default `"Risco"` -- a categoria de risco derivada dos clusters,
-            ver `12_v1_clusterizacao_risco.ipynb`).
+            Nome da coluna alvo (default `"Risco"`)
 
         Métodos
         -------
