@@ -9,12 +9,12 @@ mesma forma de reportar (accuracy/precision/recall/F1, matriz de confusão, vari
 
 Adaptações em relação à original:
 - Alvo configurável (`target`, default `"Risco"`) em vez de `"classe"` fixo -- a coluna alvo aqui é a
-  categoria de risco derivada dos clusters de `06_clusterizacao_risco.ipynb` (ver notebook de
+  categoria de risco derivada dos clusters de `12_v1_clusterizacao_risco.ipynb` (ver notebook de
   classificação, ainda não escrito), não um dataset didático já rotulado.
 - `class_weight="balanced"` em SVM e Random Forest -- os 2 únicos dos 6 modelos com esse parâmetro
   nativo no scikit-learn. Motivo: a discussão que levou a este arquivo já identificou que "Baixo"
   tende a virar a classe MAJORITÁRIA disparada (a maioria dos genomas High/Medium/Bin não tem carga
-  beta-lactâmica -- ver `06_clusterizacao_risco.ipynb`, seção 10), então treinar sem correção de peso
+  beta-lactâmica -- ver `12_v1_clusterizacao_risco.ipynb`, seção 10), então treinar sem correção de peso
   tende a colapsar pra sempre prever a classe majoritária. `KNeighborsClassifier`/
   `GradientBoostingClassifier`/`GaussianNB`/`MLPClassifier` NÃO têm `class_weight` nativo -- se o
   desbalanceamento continuar um problema depois de testar estes 6, a próxima ferramenta é
@@ -86,7 +86,7 @@ class Classifier:
             DataFrame contendo as features e a coluna alvo.
         target : str
             Nome da coluna alvo (default `"Risco"` -- a categoria de risco derivada dos clusters,
-            ver `06_clusterizacao_risco.ipynb`).
+            ver `12_v1_clusterizacao_risco.ipynb`).
 
         Métodos
         -------
