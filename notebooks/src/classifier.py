@@ -6,14 +6,6 @@ https://github.com/Laboratorio-de-Analise-de-Dados/disciplina_python_ml,
 dev/script/aulas_teoricas/src/classifier.py. Mesmo pipeline (KNN/SVM/RF/GBM/NB/NN, cada um com
 ColumnTransformer + VarianceThreshold + SelectKBest + GridSearchCV(StratifiedKFold)),
 mesma forma de reportar (métricas, matriz de confusão, variáveis selecionadas).
-
-Diferenças em relação à original:
-- avaliação em dados que o modelo NÃO viu: `df_test`, se for passado; senão, predições
-  out-of-fold (`cross_val_predict`). A original avaliava no próprio treino;
-- matriz de confusão com os rótulos na mesma ordem das linhas/colunas;
-- `descartar`: colunas que não são feature (ex.: `Species`) saem de X;
-- `scoring` configurável (default `balanced_accuracy`, alvo desbalanceado);
-- GridSearchCV ajustado uma vez só por chamada de `classify`.
 """
 
 # Importando modelos
@@ -73,8 +65,7 @@ class Classifier:
         target : str
             Nome da coluna alvo (default `"Risco"`).
         df_test : pd.DataFrame | None
-            Teste, com as mesmas colunas de `df`. Se None, a avaliação usa
-            predições out-of-fold do treino (`cross_val_predict`).
+            Teste, com as mesmas colunas de `df`. 
         descartar : list[str]
             Colunas que não são feature nem alvo (ex.: `["Species"]`). As que
             não existirem no df são ignoradas.
@@ -114,7 +105,7 @@ class Classifier:
         self.y = df[target]
         self.X_test = None if df_test is None else df_test[self.X.columns]
         self.y_test = None if df_test is None else df_test[target]
-        self.modelos_ = {}
+        self.modelos_ = {}  # só existe depois do .fit
 
         return None
 
@@ -274,10 +265,8 @@ class Classifier:
             param_grid : dict
                 Dicionário contendo a grade de hiperparâmetros para busca.
         """
-        # KNeighborsClassifier não tem `class_weight` nativo -- se o
-        # desbalanceamento pesar aqui, a saída é reamostragem (SMOTE) antes
-        # do fit, não um parâmetro deste estimador
-        pipeline = Pipeline(
+        # KNeighborsClassifier não tem `class_weight` para colunas desbalanceadas
+        pipeline = Pipeline(  # lista de tuplas
             [
                 ("preprocessor", self.__preprocessador()),
                 ("var_threshold", VarianceThreshold(threshold=1e-4)),
@@ -309,9 +298,7 @@ class Classifier:
             param_grid : dict
                 Dicionário contendo a grade de hiperparâmetros para busca.
         """
-        # class_weight="balanced" -- pondera a função de perda pelo inverso
-        # da frequência de cada classe, pra classe majoritária não dominar
-        # sozinha a fronteira de decisão
+
         pipeline = Pipeline(
             [
                 ("preprocessor", self.__preprocessador()),
@@ -320,7 +307,8 @@ class Classifier:
                     "feature_selection",
                     SelectKBest(score_func=f_classif, k=min(10, self.X.shape[1])),
                 ),
-                ("svm", SVC(random_state=42, class_weight="balanced")),
+                ("svm", SVC(random_state=42, 
+                            class_weight="balanced")), # pondera a função de perda pelo inverso da frequência de cada classe
             ]
         )
         param_grid = {
@@ -388,9 +376,7 @@ class Classifier:
             param_grid : dict
                 Dicionário contendo a grade de hiperparâmetros para busca.
         """
-        # GradientBoostingClassifier não tem `class_weight` nativo (só
-        # `sample_weight` em .fit(), que o Pipeline/GridSearchCV não passa
-        # por padrão) -- mesma ressalva de KNN acima
+        # GradientBoostingClassifier não tem `class_weight`
         pipeline = Pipeline(
             [
                 ("preprocessor", self.__preprocessador()),
@@ -535,7 +521,7 @@ class Classifier:
         grid_search.fit(self.X, self.y)
         self.modelos_[modelo] = grid_search.best_estimator_
 
-        self.__metricas_pontuais(grid_search=grid_search)
+        self.__metricas_pontuais(grid_search=grid_search) # printa .best_param e .best_score
         y_true, y_pred, conjunto = self.__avaliar(grid_search=grid_search, cv=cv)
         self.__matrix_confusao(y_true, y_pred, conjunto)
         self.__variaveis_selecionadas(grid_search=grid_search)
