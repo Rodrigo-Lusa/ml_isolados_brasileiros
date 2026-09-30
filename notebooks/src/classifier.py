@@ -4,8 +4,16 @@ src/classifier.py
 Classificador supervisionado -- adaptado de
 https://github.com/Laboratorio-de-Analise-de-Dados/disciplina_python_ml,
 dev/script/aulas_teoricas/src/classifier.py. Mesmo pipeline (KNN/SVM/RF/GBM/NB/NN, cada um com
-ColumnTransformer + VarianceThreshold + SelectKBest + GridSearchCV(StratifiedKFold, scoring=accuracy)),
-mesma forma de reportar (accuracy/precision/recall/F1, matriz de confusão, variáveis selecionadas).
+ColumnTransformer + VarianceThreshold + SelectKBest + GridSearchCV(StratifiedKFold)),
+mesma forma de reportar (métricas, matriz de confusão, variáveis selecionadas).
+
+Diferenças em relação à original:
+- avaliação em dados que o modelo NÃO viu: `df_test`, se for passado; senão, predições
+  out-of-fold (`cross_val_predict`). A original avaliava no próprio treino;
+- matriz de confusão com os rótulos na mesma ordem das linhas/colunas;
+- `descartar`: colunas que não são feature (ex.: `Species`) saem de X;
+- `scoring` configurável (default `balanced_accuracy`, alvo desbalanceado);
+- GridSearchCV ajustado uma vez só por chamada de `classify`.
 """
 
 # Importando modelos
@@ -26,6 +34,7 @@ import numpy as np
 # Seleção de hiperparâmetros e validação cruzada
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import cross_val_predict
 
 # Estruturação dos dados e pré-processamento
 from sklearn.preprocessing import StandardScaler
@@ -46,6 +55,7 @@ from sklearn.metrics import (
     confusion_matrix,
     ConfusionMatrixDisplay,
     accuracy_score,
+    balanced_accuracy_score,
     precision_score,
     recall_score,
     f1_score,
@@ -59,114 +69,115 @@ class Classifier:
         Parâmetros
         ----------
         df : pd.DataFrame
-            DataFrame contendo as features e a coluna alvo.
+            Treino: features + coluna alvo.
         target : str
-            Nome da coluna alvo (default `"Risco"`)
+            Nome da coluna alvo (default `"Risco"`).
+        df_test : pd.DataFrame | None
+            Teste, com as mesmas colunas de `df`. Se None, a avaliação usa
+            predições out-of-fold do treino (`cross_val_predict`).
+        descartar : list[str]
+            Colunas que não são feature nem alvo (ex.: `["Species"]`). As que
+            não existirem no df são ignoradas.
+        scoring : str
+            Métrica do GridSearchCV (default `"balanced_accuracy"`).
+
+        Atributos (depois de `classify`)
+        --------------------------------
+        modelos_ : dict[str, Pipeline]
+            Melhor pipeline de cada modelo já treinado (ex.: `clf.modelos_["rf"]`),
+            pronto para `.predict()` em dados novos.
 
         Métodos
         -------
-        classify(modelo)
-            Treina e avalia o modelo especificado.
+        classify(modelo, n_splits=5)
+            Treina, avalia e devolve (métricas, predições).
+
+        Exemplo
+        -------
+        >>> clf = Classifier(df_train, target="cluster", df_test=df_test, descartar=["Species"])
+        >>> metricas, y_pred = clf.classify("rf")
+        >>> clf.modelos_["rf"].predict(df_novo[clf.X.columns])
     """
 
-    def __init__(self, df: pd.DataFrame, target: str = "Risco") -> None:
-        self.df = df
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        target: str = "Risco",
+        df_test: pd.DataFrame | None = None,
+        descartar: list[str] | tuple[str, ...] = (),
+        scoring: str = "balanced_accuracy",
+    ) -> None:
         self.target = target
-        self.X = df.drop(target, axis=1)
+        self.scoring = scoring
+        self.descartar = [c for c in descartar if c in df.columns]
+        self.X = df.drop(columns=[target, *self.descartar])
         self.y = df[target]
+        self.X_test = None if df_test is None else df_test[self.X.columns]
+        self.y_test = None if df_test is None else df_test[target]
+        self.modelos_ = {}
 
         return None
 
-    def __matrix_confusao(self, grid_search: GridSearchCV) -> None:
+    def __avaliar(self, grid_search: GridSearchCV, cv: StratifiedKFold) -> tuple[pd.Series, np.ndarray, str]:
         """
-        Exibe a matriz de confusão do melhor modelo encontrado pelo GridSearchCV.
-            Parâmetros
-            ----------
-            grid_search : GridSearchCV
-                Objeto GridSearchCV já ajustado com os dados.
+        Predições em dados que o modelo não viu: o teste, se existir; senão,
+        out-of-fold no treino (cada genoma é previsto por um modelo treinado
+        sem ele, com os hiperparâmetros do melhor modelo).
+            Retorna
+            -------
+            (y_verdadeiro, y_pred, nome_do_conjunto)
         """
-        grid_search.fit(self.X, self.y)
-
-        # 10. Avaliação no conjunto de Teste
-        best_model = grid_search.best_estimator_
-        y_pred = best_model.predict(self.X)
-
-        accuracy = accuracy_score(self.y, y_pred)
-        cm = confusion_matrix(self.y, y_pred)
-        disp = ConfusionMatrixDisplay(
-            confusion_matrix=cm,
-            display_labels=self.y.value_counts().index,
-        )
-        disp.plot(cmap=plt.cm.Greens)
-        plt.title(f"Accuracy {accuracy:.2f}")
-        plt.show()
-        print("\nClassification Report:")
-        print(classification_report(self.y, y_pred))
-        return None
-
-    def __retornar_metricas(
-        self, grid_search: GridSearchCV
-    ) -> tuple[pd.DataFrame, np.ndarray]:
-        grid_search.fit(self.X, self.y)
-
-        # 10. Avaliação no conjunto de Teste
-        best_model = grid_search.best_estimator_
-        y_pred = best_model.predict(self.X)
-
-        #  Acurácia
-        acc = accuracy_score(self.y, y_pred)
-
-        # Precision -- "weighted" pondera pelo suporte de cada classe, mais
-        # honesto que "macro" quando o alvo é desbalanceado (esperado aqui,
-        # ver nota do módulo sobre "Baixo" como classe majoritária)
-        precision = precision_score(self.y, y_pred, average="weighted")
-
-        # Recall
-        recall = recall_score(self.y, y_pred, average="weighted")
-
-        # F1-score
-        f1 = f1_score(self.y, y_pred, average="weighted")
-
-        retorno = pd.DataFrame(
-            {
-                "Acurácia": [acc],
-                "Precision": [precision],
-                "Recall": [recall],
-                "F1-Score": [f1],
-            }
-        ).round(4)
-
-        return retorno, y_pred
+        if self.X_test is not None:
+            return self.y_test, grid_search.best_estimator_.predict(self.X_test), "teste"
+        y_pred = cross_val_predict(grid_search.best_estimator_, self.X, self.y, cv=cv)
+        return self.y, y_pred, "out-of-fold (treino)"
 
     def __metricas_pontuais(self, grid_search: GridSearchCV) -> None:
         """
-        Exibe os melhores hiperparâmetros e a acurácia do melhor modelo
-        encontrado pelo GridSearchCV.
-            Parâmetros
-            ----------
-            grid_search : GridSearchCV
-                Objeto GridSearchCV já ajustado com os dados.
+        Exibe os melhores hiperparâmetros e o score de CV do melhor modelo
+        encontrado pelo GridSearchCV (já ajustado).
         """
-        # 10. Treinamento Final no Dataset Completo
-        # Após validar a capacidade de generalização via Nested CV, ajustamos
-        # o GridSearch nos dados totais
-
-        print("--- Treinando modelo com Pipeline de pré-processamento ---")
-        grid_search.fit(self.X, self.y)
-
-        # 9. Exibição dos Resultados
         print("\n--- Melhores Resultados do Grid Search ---")
         print(f"Melhores hiperparâmetros: {grid_search.best_params_}")
-        print(f"Melhor acurácia (CV): {grid_search.best_score_:.4f}")
-
-        # 10. Avaliação no conjunto de Teste
-        best_model = grid_search.best_estimator_
-        y_pred = best_model.predict(self.X)
-
-        print("\n--- Desempenho no Conjunto de Teste ---")
-        print(f"Acurácia final: {accuracy_score(self.y, y_pred):.4f}\n")
-
+        print(f"Melhor {self.scoring} (CV): {grid_search.best_score_:.4f}")
         return None
+
+    def __matrix_confusao(self, y_true: pd.Series, y_pred: np.ndarray, conjunto: str) -> None:
+        """
+        Exibe a matriz de confusão e o classification report.
+        `labels` fixa a ordem das classes, e a mesma lista vai para
+        `display_labels`, então os nomes dos eixos batem com linhas/colunas.
+        """
+        labels = np.unique(np.concatenate([np.asarray(y_true), np.asarray(y_pred)]))
+        cm = confusion_matrix(y_true, y_pred, labels=labels)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+        disp.plot(cmap=plt.cm.Greens)
+        plt.title(
+            f"{conjunto} | accuracy {accuracy_score(y_true, y_pred):.2f} | "
+            f"balanced {balanced_accuracy_score(y_true, y_pred):.2f}"
+        )
+        plt.show()
+        print(f"\nClassification Report ({conjunto}):")
+        print(classification_report(y_true, y_pred, zero_division=0))
+        return None
+
+    def __retornar_metricas(self, y_true: pd.Series, y_pred: np.ndarray, conjunto: str) -> pd.DataFrame:
+        """
+        Métricas em uma linha. "weighted" pondera pelo suporte de cada classe;
+        "macro" (F1 macro, balanced accuracy) dá o mesmo peso a todas, então
+        uma classe pequena mal prevista aparece.
+        """
+        return pd.DataFrame(
+            {
+                "Conjunto": [conjunto],
+                "Acurácia": [accuracy_score(y_true, y_pred)],
+                "Acurácia balanceada": [balanced_accuracy_score(y_true, y_pred)],
+                "Precision (weighted)": [precision_score(y_true, y_pred, average="weighted", zero_division=0)],
+                "Recall (weighted)": [recall_score(y_true, y_pred, average="weighted", zero_division=0)],
+                "F1 (weighted)": [f1_score(y_true, y_pred, average="weighted", zero_division=0)],
+                "F1 (macro)": [f1_score(y_true, y_pred, average="macro", zero_division=0)],
+            }
+        ).round(4)
 
     def __variaveis_selecionadas(self, grid_search: GridSearchCV) -> pd.DataFrame:
         """
@@ -229,7 +240,8 @@ class Classifier:
     def __preprocessador(self) -> ColumnTransformer:
         """
         Cria um pré-processador que padroniza variáveis numéricas e
-        aplica One-Hot Encoding em variáveis categóricas.
+        aplica One-Hot Encoding em variáveis categóricas (colunas de `self.X`,
+        que já não tem o alvo nem as colunas de `descartar`).
             Retorna
             -------
             preprocessor : ColumnTransformer
@@ -240,18 +252,12 @@ class Classifier:
                 (
                     "num",
                     StandardScaler(),
-                    (self.df.select_dtypes(include=["number"]).columns.drop(
-                        self.target, errors="ignore"
-                    )),
+                    self.X.select_dtypes(include=["number", "bool"]).columns,
                 ),
                 (
                     "cat",
                     OneHotEncoder(drop="first", handle_unknown="ignore"),
-                    (
-                        self.df.drop(self.target, axis=1)
-                        .select_dtypes(include=["object"])
-                        .columns
-                    ),
+                    self.X.select_dtypes(include=["object", "category"]).columns,
                 ),
             ]
         )
@@ -304,8 +310,8 @@ class Classifier:
                 Dicionário contendo a grade de hiperparâmetros para busca.
         """
         # class_weight="balanced" -- pondera a função de perda pelo inverso
-        # da frequência de cada classe, pra "Baixo" (esperado majoritário,
-        # ver docstring do módulo) não dominar sozinho a fronteira de decisão
+        # da frequência de cada classe, pra classe majoritária não dominar
+        # sozinha a fronteira de decisão
         pipeline = Pipeline(
             [
                 ("preprocessor", self.__preprocessador()),
@@ -486,20 +492,23 @@ class Classifier:
         return pipeline, param_grid
 
     def classify(
-        self, modelo: str, n_splits: int = 3
+        self, modelo: str, n_splits: int = 5
     ) -> tuple[pd.DataFrame, np.ndarray]:
         """
-        Treina e avalia o modelo especificado.
+        Treina (GridSearchCV no treino) e avalia o modelo especificado.
             Parâmetros
             ----------
             modelo : str
                 Nome do modelo a ser treinado. Opções:
                                 'knn', 'svm', 'rf', 'gbm', 'nb', 'nn'.
             n_splits : int, opcional
-                Número de divisões para a validação cruzada (default é 3).
+                Número de divisões para a validação cruzada (default é 5).
             Retorna
-                return retorno, grid_search.predict(self.X)
-                pd.DataFrame
+            -------
+            metricas : pd.DataFrame
+                1 linha com as métricas no teste (ou out-of-fold).
+            y_pred : np.ndarray
+                Predições nesse mesmo conjunto.
         """
         construtores = {
             "knn": self.__knn_classify,
@@ -513,19 +522,22 @@ class Classifier:
             raise ValueError(f"modelo {modelo!r} desconhecido -- use um de {list(construtores)}")
 
         estimator, param_grid = construtores[modelo]()
-        inner_cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+        cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
         grid_search = GridSearchCV(
             estimator=estimator,
             param_grid=param_grid,
-            cv=inner_cv,
-            scoring="accuracy",
+            cv=cv,
+            scoring=self.scoring,
             n_jobs=-1,
         )
 
+        print(f"--- Treinando {modelo} ({len(self.X)} amostras, {self.X.shape[1]} features) ---")
+        grid_search.fit(self.X, self.y)
+        self.modelos_[modelo] = grid_search.best_estimator_
+
         self.__metricas_pontuais(grid_search=grid_search)
-        self.__matrix_confusao(grid_search=grid_search)
+        y_true, y_pred, conjunto = self.__avaliar(grid_search=grid_search, cv=cv)
+        self.__matrix_confusao(y_true, y_pred, conjunto)
         self.__variaveis_selecionadas(grid_search=grid_search)
 
-        retorno = self.__retornar_metricas(grid_search=grid_search)
-
-        return retorno
+        return self.__retornar_metricas(y_true, y_pred, conjunto), y_pred
