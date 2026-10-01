@@ -106,6 +106,7 @@ class Classifier:
         self.X_test = None if df_test is None else df_test[self.X.columns]
         self.y_test = None if df_test is None else df_test[target]
         self.modelos_ = {}  # só existe depois do .fit
+        self.melhores_parametros_ = {} 
 
         return None
 
@@ -520,6 +521,7 @@ class Classifier:
         print(f"--- Treinando {modelo} ({len(self.X)} amostras, {self.X.shape[1]} features) ---")
         grid_search.fit(self.X, self.y)
         self.modelos_[modelo] = grid_search.best_estimator_
+        self.melhores_parametros_[modelo] = grid_search.best_params_
 
         self.__metricas_pontuais(grid_search=grid_search) # printa .best_param e .best_score
         y_true, y_pred, conjunto = self.__avaliar(grid_search=grid_search, cv=cv)
