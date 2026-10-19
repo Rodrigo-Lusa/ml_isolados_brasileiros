@@ -65,6 +65,7 @@ class Regression:
         self.target = target  # <- ALTERADO (linha nova)
         self.X = df.drop(target, axis=1)
         self.y = df[target]
+        self.modelos_ = {}  # só existe depois do .regress
 
     def __obter_metricas(
         self, grid_search: GridSearchCV | RandomizedSearchCV, 
@@ -80,7 +81,7 @@ class Regression:
         r_cal, r_cal_p = spearmanr(df_test["y_true"], df_test["y_pred"])
         r2_cal = r2_score(df_test["y_true"], df_test["y_pred"])
         mae_cal = mean_absolute_error(df_test["y_true"], df_test["y_pred"])
-        rmse_cal = mean_squared_error(df_test["y_true"], df_test["y_pred"])
+        rmse_cal = np.sqrt(mean_squared_error(df_test["y_true"], df_test["y_pred"]))
         mape_cal = mean_absolute_percentage_error(df_test["y_true"], df_test["y_pred"])
 
         mensagem = f"""
@@ -350,6 +351,7 @@ class Regression:
         else:
             grid_search.fit(self.X, self.y)
 
+        self.modelos_[modelo] = grid_search  # .predict() em dados novos
         print("Grid Search concluído.")
         print("=" * 50)
         print("Melhores parâmetros encontrados:")
