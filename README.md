@@ -22,16 +22,7 @@ duas bases, obteve-se um total de 7.068 isolados bacterianos brasileiros únicos
 
 Foram filtrados apenas os genomas de espécies ou gêneros listados pela OMS (2024) como de
 nível crítico.
-
-<p align="center">
-  <img src="app/data/imagens/bubble_plot_criticos.png" alt="Espécies críticas (OMS, 2024)" width="650">
-</p>
-
-Divisão estratificada por espécie (espécies com < 20 genomas agrupadas em "outras"):
-
-<p align="center">
-  <img src="app/data/imagens/split_conjuntos.png" alt="Divisão treino / validação / teste" width="260">
-</p>
+Divisão estratificada por espécie (espécies com < 20 genomas agrupadas em "outras").
 
 ## App
 
