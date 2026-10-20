@@ -1,0 +1,4 @@
+,kmeans,agglomerative,dbscan,ARI_com_especie
+kmeans,1.0,0.968,0.82,0.205
+agglomerative,0.968,1.0,0.826,0.196
+dbscan,0.82,0.826,1.0,0.221

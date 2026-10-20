@@ -1,0 +1,22 @@
+{
+  "Multiple Linear Regression": {
+    "modelo": "regressor",
+    "best_params": {"feature_selection__k": "all", "regressor__fit_intercept": true, "regressor__positive": false, "var_threshold__threshold": 0.0001},
+    "n_originais": 19, "n_apos_variancia": 19, "n_selecionadas": 19
+  },
+  "Suport Vector Machine": {
+    "modelo": "svm",
+    "best_params": {"feature_selection__k": "all", "svm__C": 1, "svm__epsilon": 0.2, "svm__kernel": "rbf", "var_threshold__threshold": 0.0001},
+    "n_originais": 19, "n_apos_variancia": 19, "n_selecionadas": 19
+  },
+  "Nayve Bayes": {
+    "modelo": "bayesian_ridge",
+    "best_params": {"feature_selection__k": "all", "nb__alpha_1": 0.0001, "nb__lambda_1": 1e-06, "nb__max_iter": 100, "var_threshold__threshold": 0.0001},
+    "n_originais": 19, "n_apos_variancia": 19, "n_selecionadas": 19
+  },
+  "Neural Network": {
+    "modelo": "neural_network",
+    "best_params": {"var_threshold__threshold": 0.0001, "nn__optimizer": "RMSprop", "nn__epochs": 10, "nn__batch_size": 32, "nn__activation2": "relu", "nn__activation1": "sigmoid", "feature_selection__k": "all"},
+    "n_originais": 19, "n_apos_variancia": 19, "n_selecionadas": 19
+  }
+}

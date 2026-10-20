@@ -1,0 +1,16 @@
+{
+  "kmeans": {
+    "n_clusters": 6,
+    "init": "k-means++",
+    "n_init": 10
+  },
+  "agglomerative": {
+    "n_clusters": 6,
+    "metric": "euclidean",
+    "linkage": "ward"
+  },
+  "dbscan": {
+    "eps": 0.75,
+    "min_samples": 47
+  }
+}

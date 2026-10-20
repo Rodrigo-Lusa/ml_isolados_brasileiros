@@ -1,0 +1,10 @@
+{
+  "features_finais": [
+    "has_carbapenemase",
+    "has_mbl",
+    "has_esbl",
+    "n_bl_adquiridas",
+    "has_16s_metilase",
+    "carbapenemase_plasmidial"
+  ]
+}

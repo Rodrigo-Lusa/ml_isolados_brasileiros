@@ -133,9 +133,7 @@ class Clustering:
         silhouette = silhouette_score(X_test[mask], labels_proj[mask])
 
         # --- Exibição dos Resultados ---
-        msn_resul = "=" * 50 + "<br>"
-        msn_resul += f"<h6 style='text-align: center;'>{self.modelo}</h6>"
-        msn_resul += "=" * 50 + "<br>"
+        msn_resul = f"<div class='titulo-modelo'>{self.modelo}</div>"
         msn_resul += f"Clusters no Treino: {clusters}<br><br>"
         msn_resul += "Frequências Esperadas (proporção do Treino): <br>"
         msn_resul += f"{expected.round(1).values}<br><br>"

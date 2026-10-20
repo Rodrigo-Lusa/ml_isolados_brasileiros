@@ -1,0 +1,10 @@
+modelo,conjunto,n_clusters_refit,silhouette_refit,davies_bouldin_refit,calinski_harabasz_refit,ari_projecao_x_refit
+agglomerative,teste,6,0.603,0.719,181.82,1.0
+agglomerative,treino,6,0.6,0.731,1254.321,1.0
+agglomerative,validação,6,0.608,0.762,349.368,0.981
+dbscan,teste,8,0.799,0.314,711.315,1.0
+dbscan,treino,8,0.792,0.324,4300.926,1.0
+dbscan,validação,8,0.785,0.321,1104.195,0.993
+kmeans,teste,6,0.604,0.733,183.401,1.0
+kmeans,treino,6,0.602,0.751,1271.199,1.0
+kmeans,validação,6,0.607,0.767,350.099,0.995
