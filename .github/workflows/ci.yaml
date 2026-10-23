@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4          # baixa o repo na máquina
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"           # mesma versão do dev/docker/python.Dockerfile
+
+      - name: Instalar dependências
+        run: |
+          pip install --upgrade pip
+          pip install -r app/requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Rodar testes
+        run: pytest --disable-warnings --cov=./app/src ./app/py_test
