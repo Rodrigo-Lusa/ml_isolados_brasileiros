@@ -27,4 +27,4 @@ Divisão estratificada por espécie (espécies com < 20 genomas agrupadas em "ou
 ## App
 
 O app do Streamlit traz as etapas de pré-processamento, clustering, classificação e
-regressão: [Abrir o app](LINK_DO_APP)
+regressão: [Abrir o app](https://ml-isolados-brasileiros.streamlit.app/)
