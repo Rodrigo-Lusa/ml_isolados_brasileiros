@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-RANDOM_STATE = 42
-
 # Mesmas cores do design (treino / validação / teste)
 CORES_SPLIT = {"Treino": "#82B1D3", "Validação": "#8ED3C7", "Teste": "#FFED6F"}
 
@@ -32,45 +30,59 @@ def grafico_split(tamanhos: dict[str, int]):
     return fig
 
 
-def grafico_bivariado(
-    df: pd.DataFrame, bivariado: pd.DataFrame, especie: pd.Series, n_col: int = 5
+def grafico_corr(corr: pd.DataFrame, titulo: str):
+    """Matriz de correlação do ydata (auto), antes ou depois da seleção (final/01)."""
+    fig, ax = plt.subplots(figsize=(1 + 0.6 * len(corr), 0.6 * len(corr)))
+    sns.heatmap(
+        corr, annot=True, fmt=".2f", cmap="rocket_r", vmin=0, vmax=1, ax=ax,
+        annot_kws={"fontsize": 7},
+    )
+    ax.set_title(titulo)
+    plt.tight_layout()
+    plt.close(fig)
+
+    return fig
+
+
+def grafico_metricas(
+    df: pd.DataFrame,
+    metricas: dict[str, str],
+    titulo: str,
+    referencias: dict[str, float] | None = None,
+    formatos: dict[str, str] | None = None,
 ):
     """
-    Scatter de todos os pares do clustering bivariado (notebook 03, seção 6),
-    na ordem do silhouette CV. Jitter nas binárias para enxergar a densidade.
+    Métricas por algoritmo (eixo x) e conjunto (cor), um painel por métrica
+    porque as escalas são diferentes (mesmo gráfico dos notebooks final/02–04).
+        Parâmetros:
+            df: formato longo, colunas "modelo", "conjunto" e uma por métrica.
+            metricas: {coluna: título do painel}.
+            referencias: linha tracejada por métrica (ex.: {"qui2_p": 0.05}).
+            formatos: rótulo das barras por métrica (default "%.2f").
     """
-    rng = np.random.default_rng(RANDOM_STATE)
-    n_lin = int(np.ceil(len(bivariado) / n_col))
-    fig, axes = plt.subplots(n_lin, n_col, figsize=(4 * n_col, 3.6 * n_lin))
-    axes = axes.ravel()
-    for ax, (_, p) in zip(axes, bivariado.iterrows()):
-        x = df[p.c1] + (rng.normal(0, 0.06, len(df)) if p.c1_binaria else 0)
-        y = df[p.c2] + (rng.normal(0, 0.06, len(df)) if p.c2_binaria else 0)
-        sns.scatterplot(
-            x=x, y=y, hue=especie.values, s=10, alpha=0.6, ax=ax, legend=False
+    referencias, formatos = referencias or {}, formatos or {}
+    cores = {k.lower(): v for k, v in CORES_SPLIT.items()}
+    fig, axes = plt.subplots(1, len(metricas), figsize=(4.3 * len(metricas), 4.2))
+    axes = np.atleast_1d(axes)
+    for ax, (col, rotulo) in zip(axes, metricas.items()):
+        sns.barplot(
+            data=df, x="modelo", y=col, hue="conjunto", hue_order=list(cores),
+            palette=cores, ax=ax,
         )
-        ax.set(
-            xlabel=p.c1,
-            ylabel=p.c2,
-            title=f"sil CV={p.silhouette_cv:.2f} (k={p.k})",
-        )
-    for ax in axes[len(bivariado) :]:
-        ax.axis("off")
-
-    # uma legenda só, para a figura inteira
-    especies = list(dict.fromkeys(especie.values))
-    cores = sns.color_palette(n_colors=len(especies))
-    marcadores = [
-        plt.Line2D([], [], marker="o", ls="", color=c, label=e)
-        for e, c in zip(especies, cores)
-    ]
+        for barras in ax.containers:
+            ax.bar_label(barras, fmt=formatos.get(col, "%.2f"), fontsize=7)
+        if col in referencias:
+            ax.axhline(referencias[col], ls="--", c="k", lw=1)
+        ax.set(title=rotulo, xlabel="", ylabel="")
+        ax.tick_params(axis="x", rotation=25)
+        ax.get_legend().remove()
+    handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(
-        handles=marcadores,
-        loc="lower center",
-        ncol=min(len(especies), 5),
-        bbox_to_anchor=(0.5, 1.0),
+        handles, labels, loc="upper center", ncol=3, bbox_to_anchor=(0.5, 1.06),
         frameon=False,
     )
+    fig.suptitle(titulo, y=1.12)
+    sns.despine(fig)
     plt.tight_layout()
     plt.close(fig)
 
@@ -78,7 +90,7 @@ def grafico_bivariado(
 
 
 def grafico_concordancia(concordancia: pd.DataFrame):
-    """Heatmap do ARI entre os 3 algoritmos e com a espécie (notebook 04, 3.1)."""
+    """Heatmap do ARI entre os 3 algoritmos e com a espécie (notebook final/02, 2.1)."""
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.heatmap(concordancia, annot=True, fmt=".3f", vmin=0, vmax=1, ax=ax)
     ax.set_title("Adjusted Rand Index (treino)")
@@ -90,7 +102,7 @@ def grafico_concordancia(concordancia: pd.DataFrame):
 
 def grafico_perfil(df: pd.DataFrame, labels: pd.Series, features: list[str], n_sep: int):
     """
-    Perfil por cluster (notebook 04, seção 4): cor = z-score da média do
+    Perfil por cluster (notebook final/02, seção 4): cor = z-score da média do
     cluster em relação ao conjunto; número = média da feature no cluster.
     A linha preta separa as features do clustering das descritivas.
     """

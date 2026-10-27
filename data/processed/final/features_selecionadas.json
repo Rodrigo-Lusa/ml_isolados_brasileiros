@@ -1,0 +1,20 @@
+{
+  "features_finais": [
+    "has_mbl",
+    "has_carbapenemase_serina",
+    "has_esbl",
+    "has_16s_metilase",
+    "has_pmqr",
+    "n_classes_adquiridas",
+    "pct_adquiridos_plasmidial"
+  ],
+  "descritivas": [
+    "has_carbapenemase",
+    "carbapenemase_plasmidial",
+    "n_bl_adquiridas",
+    "n_genes_adquiridos",
+    "has_ampc_adquirida",
+    "has_mcr"
+  ],
+  "criterio": "treino; binária com prevalência < 5% sai; remoção iterativa pelo alerta High correlation do ydata (auto, limiar 0.5): sai a feature de maior grau, empate = maior soma das correlações"
+}

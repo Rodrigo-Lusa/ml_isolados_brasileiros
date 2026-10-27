@@ -14,7 +14,7 @@ import pandas as pd
 
 class Regression:
     """
-    Exibe os resultados de um regressor já treinado (notebook 06).
+    Exibe os resultados de um regressor já treinado (notebook final/04).
         Parâmetros
         ----------
         y_pred_treino : pd.Series
@@ -96,7 +96,7 @@ class Regression:
             marginal_ticks=True,
             data=df_test,
         )
-        p.fig.suptitle(f"Correlação para {y_true} com algoritmo {y_pred}", y=1.02)
+        p.fig.suptitle(y_pred, y=1.02)
         p.ax_joint.text(
             0.05,
             0.99,

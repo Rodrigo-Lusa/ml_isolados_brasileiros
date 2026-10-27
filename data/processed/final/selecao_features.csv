@@ -1,0 +1,16 @@
+feature,tipo,decisao,motivo
+has_mbl,binária,fica,sem alerta de correlação alta
+has_carbapenemase_serina,binária,fica,sem alerta de correlação alta
+has_esbl,binária,fica,sem alerta de correlação alta
+has_16s_metilase,binária,fica,sem alerta de correlação alta
+has_pmqr,binária,fica,sem alerta de correlação alta
+n_classes_adquiridas,contagem/proporção,fica,sem alerta de correlação alta
+pct_adquiridos_plasmidial,contagem/proporção,fica,sem alerta de correlação alta
+has_carbapenemase,binária,sai,"correlação alta (rodada 4): carbapenemase_plasmidial, has_carbapenemase_serina"
+n_carbapenemases,contagem/proporção,sai,"correlação alta (rodada 2): carbapenemase_plasmidial, has_carbapenemase, has_carbapenemase_serina, has_mbl"
+has_ampc_adquirida,binária,sai,prevalência 3.6% < 5%
+n_bl_adquiridas,contagem/proporção,sai,"correlação alta (rodada 1): carbapenemase_plasmidial, has_carbapenemase, has_esbl, n_ame, n_classes_adquiridas, n_genes_adquiridos"
+n_ame,contagem/proporção,sai,"correlação alta (rodada 5): has_16s_metilase, n_classes_adquiridas"
+has_mcr,binária,sai,prevalência 2.5% < 5%
+n_genes_adquiridos,contagem/proporção,sai,"correlação alta (rodada 3): has_16s_metilase, has_esbl, n_ame, n_classes_adquiridas"
+carbapenemase_plasmidial,binária,sai,correlação alta (rodada 6): has_carbapenemase_serina

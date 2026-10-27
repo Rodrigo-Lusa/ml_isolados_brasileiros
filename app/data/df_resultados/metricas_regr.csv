@@ -1,0 +1,13 @@
+modelo,conjunto,spearman,r2,mae,rmse,mae_dp
+Multiple Linear Regression,treino,0.6775,0.4479,1.1646,1.5315,0.5648
+Multiple Linear Regression,validação,0.6641,0.4442,1.1944,1.5509,0.5735
+Multiple Linear Regression,teste,0.7046,0.4727,1.2095,1.5476,0.5662
+Support Vector Machine,treino,0.7072,0.475,1.0837,1.4935,0.5256
+Support Vector Machine,validação,0.684,0.4668,1.1175,1.5191,0.5366
+Support Vector Machine,teste,0.7112,0.4875,1.1421,1.5257,0.5347
+Bayesian Ridge,treino,0.6773,0.4473,1.168,1.5324,0.5665
+Bayesian Ridge,validação,0.6672,0.4446,1.1981,1.5503,0.5753
+Bayesian Ridge,teste,0.7094,0.474,1.2124,1.5457,0.5676
+Neural Network,treino,0.6608,0.4533,1.1209,1.5241,0.5436
+Neural Network,validação,0.6532,0.4138,1.1853,1.5927,0.5691
+Neural Network,teste,0.7001,0.4407,1.2059,1.5939,0.5645

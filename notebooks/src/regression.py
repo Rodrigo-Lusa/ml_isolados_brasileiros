@@ -302,7 +302,7 @@ class Regression:
         return pipeline, param_grid
 
     def regress(
-        self, modelo: str, n_splits: int = 5, n_iter_search: int = 20
+        self, modelo: str, n_splits: int = 5, n_iter_search: int = 20, n_jobs: int = -1
     ) -> tuple[pd.DataFrame, np.ndarray]:
         if modelo == "regressor":
             estimator, param_grid = self.__regressor_classify()
@@ -326,7 +326,8 @@ class Regression:
                 n_iter=n_iter_search,
                 cv=kf,
                 scoring="neg_mean_squared_error",
-                n_jobs=-1,
+                n_jobs=n_jobs,
+                random_state=42,
             )
         else:
             grid_search = GridSearchCV(
@@ -334,7 +335,7 @@ class Regression:
                 param_grid=param_grid,
                 cv=kf,
                 scoring="neg_mean_squared_error",
-                n_jobs=-1,
+                n_jobs=n_jobs,
             )
 
         print("Iniciando o Grid Search com Cross Validation...")

@@ -86,7 +86,7 @@ def pagina_estrutura() -> str:
     Retorna:
         str: Mensagem de sucesso.
     """
-    st.set_page_config(page_title="Isolados BR - ML", layout="wide", page_icon="🧬")
+    st.set_page_config(page_title="Isolados BR - ML", layout="wide")
     st.markdown(ESTILO, unsafe_allow_html=True)
     st.markdown(
         f"""

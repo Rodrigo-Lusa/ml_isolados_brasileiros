@@ -12,11 +12,11 @@ from sklearn.metrics import (
 
 class Classifier:
     """
-    Exibe os resultados de um classificador já treinado (notebook 05).
+    Exibe os resultados de um classificador já treinado (notebook final/03).
         Parâmetros
         ----------
         df : pd.DataFrame
-            DataFrame com as colunas 'Dataset' (Validação/Teste) e
+            DataFrame com as colunas 'Dataset' (Treino/Teste) e
             'Classe_Predita'.
 
         Métodos
@@ -34,39 +34,24 @@ class Classifier:
 
     def testar_hipotese(self) -> None:
         """
-        Testa a hipótese de que a distribuição das classes preditas na
-        validação e no teste é estatisticamente igual (homogênea)
-        ou diferente (heterogênea) usando o teste Qui-Quadrado.
+        Qui-quadrado de homogeneidade: a distribuição das classes preditas
+        é igual no treino e no teste?
         """
-        # Tabela de Contingência (Frequências Observadas)
         tabela_contingencia = pd.crosstab(
             self.df["Dataset"],
             self.df["Classe_Predita"],
         )
-        st.write("Tabela de Contingência (Observada):")
+        st.write("Tabela de contingência:")
         st.dataframe(tabela_contingencia.T)
-        st.write("-" * 40)
 
-        chi2, p_valor, graus, _ = chi2_contingency(tabela_contingencia)
+        chi2, p_valor, _, _ = chi2_contingency(tabela_contingencia)
+        st.write(f"χ² = {chi2:.4f} | p-valor = {p_valor:.4f}")
 
-        st.write(f"Estatística Qui-Quadrado: {chi2:.4f}")
-        st.write(f"Graus de Liberdade: {graus}")
-        st.write(f"Valor-p: {p_valor:.4f}")
-
-        alpha = 0.05
-        st.write("\nConclusão:")
-        if p_valor < alpha:
-            mensagem = "Rejeitamos H0: "
-            mensagem += "A distribuição das classes na validação e no teste é "
-            mensagem += "<b style='color: red;'>ESTATISTICAMENTE DIFERENTE "
-            mensagem += "(Heterogênea).</b>"
-            st.markdown(mensagem, unsafe_allow_html=True)
+        if p_valor < 0.05:
+            mensagem = "<b style='color: red;'>DIFERENTE</b> no treino e no teste (rejeita H0)."
         else:
-            mensagem = "Falhamos em rejeitar H0: "
-            mensagem += "A distribuição das classes na validação e no teste é "
-            mensagem += "<b style='color: green;'>ESTATISTICAMENTE IGUAL "
-            mensagem += "(Homogênea).</b>"
-            st.markdown(mensagem, unsafe_allow_html=True)
+            mensagem = "<b style='color: green;'>IGUAL</b> no treino e no teste (não rejeita H0)."
+        st.markdown(mensagem, unsafe_allow_html=True)
 
         return None
 
@@ -95,7 +80,7 @@ class Classifier:
         disp.ax_.set_title(f"Accuracy {accuracy:.2f}")
         st.pyplot(disp.figure_)
         plt.close(disp.figure_)
-        st.write("\nClassification Report:")
+        st.write("Classification report:")
         st.dataframe(
             (pd.DataFrame(classification_report(y_obs, y_pred, output_dict=True)).T)
         )

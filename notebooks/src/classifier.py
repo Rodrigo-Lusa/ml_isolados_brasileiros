@@ -71,6 +71,9 @@ class Classifier:
             não existirem no df são ignoradas.
         scoring : str
             Métrica do GridSearchCV (default `"balanced_accuracy"`).
+        nome_teste : str
+            Nome do conjunto passado em `df_test` nos relatórios (default
+            `"teste"`; use `"validação"` quando `df_test` for a validação).
 
         Atributos (depois de `classify`)
         --------------------------------
@@ -97,16 +100,19 @@ class Classifier:
         df_test: pd.DataFrame | None = None,
         descartar: list[str] | tuple[str, ...] = (),
         scoring: str = "balanced_accuracy",
+        nome_teste: str = "teste",
     ) -> None:
         self.target = target
         self.scoring = scoring
+        self.nome_teste = nome_teste
         self.descartar = [c for c in descartar if c in df.columns]
         self.X = df.drop(columns=[target, *self.descartar])
         self.y = df[target]
         self.X_test = None if df_test is None else df_test[self.X.columns]
         self.y_test = None if df_test is None else df_test[target]
         self.modelos_ = {}  # só existe depois do .fit
-        self.melhores_parametros_ = {} 
+        self.melhores_parametros_ = {}
+        self.cv_scores_ = {}  # melhor score de CV de cada modelo
 
         return None
 
@@ -120,7 +126,7 @@ class Classifier:
             (y_verdadeiro, y_pred, nome_do_conjunto)
         """
         if self.X_test is not None:
-            return self.y_test, grid_search.best_estimator_.predict(self.X_test), "teste"
+            return self.y_test, grid_search.best_estimator_.predict(self.X_test), self.nome_teste
         y_pred = cross_val_predict(grid_search.best_estimator_, self.X, self.y, cv=cv)
         return self.y, y_pred, "out-of-fold (treino)"
 
@@ -522,6 +528,7 @@ class Classifier:
         grid_search.fit(self.X, self.y)
         self.modelos_[modelo] = grid_search.best_estimator_
         self.melhores_parametros_[modelo] = grid_search.best_params_
+        self.cv_scores_[modelo] = grid_search.best_score_
 
         self.__metricas_pontuais(grid_search=grid_search) # printa .best_param e .best_score
         y_true, y_pred, conjunto = self.__avaliar(grid_search=grid_search, cv=cv)

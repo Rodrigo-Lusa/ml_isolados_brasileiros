@@ -23,7 +23,7 @@ RANDOM_STATE = 42
 
 class Clustering:
     """
-    Reproduz o clustering do notebook 04 com os parâmetros escolhidos:
+    Reproduz o clustering do notebook final/02 com os parâmetros escolhidos:
     ajusta no treino (features escalonadas com o scaler do treino), projeta
     os rótulos num conjunto novo e compara com um refit nesse conjunto.
     """
@@ -102,7 +102,7 @@ class Clustering:
         Índice de Rand Ajustado (ARI) entre projeção e refit.
             Parâmetros:
                 best_param: dict
-                    Parâmetros escolhidos no notebook 04.
+                    Parâmetros escolhidos no notebook final/02.
                 df_test: pd.DataFrame
                     Conjunto comparado com o treino (dados brutos).
             Retorna:
@@ -134,34 +134,21 @@ class Clustering:
 
         # --- Exibição dos Resultados ---
         msn_resul = f"<div class='titulo-modelo'>{self.modelo}</div>"
-        msn_resul += f"Clusters no Treino: {clusters}<br><br>"
-        msn_resul += "Frequências Esperadas (proporção do Treino): <br>"
-        msn_resul += f"{expected.round(1).values}<br><br>"
-        msn_resul += "Frequências Observadas (projetadas): <br>"
-        msn_resul += f"{observed.values}<br>"
-        msn_resul += "-" * 50 + "<br>"
-        msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
-        msn_resul += f"p-valor: {p_value:.4f}<br>"
-        msn_resul += f"Silhouette (rótulos projetados): {silhouette:.3f}<br>"
-        msn_resul += "-" * 50 + "<br><br>"
+        msn_resul += f"Clusters: {clusters}<br>"
+        msn_resul += f"Esperadas: {expected.round(1).values}<br>"
+        msn_resul += f"Observadas: {observed.values}<br><br>"
+        msn_resul += f"χ² = {chi2_stat:.4f} | p-valor = {p_value:.4f}<br>"
+        msn_resul += f"Silhouette = {silhouette:.3f} | ARI = {ari_score:.4f}<br><br>"
 
         if p_value > 0.05:
-            msn_resul += "Conclusão 1: Não rejeitamos H0. A distribuição dos "
-            msn_resul += "clusters <b style='color: green;'>É IGUAL</b>"
-            msn_resul += " à do treino (p > 0.05).<br>"
+            msn_resul += "Qui²: distribuição <b style='color: green;'>IGUAL</b> à do treino.<br>"
         else:
-            msn_resul += "Conclusão 1: Rejeitamos H0. A distribuição dos "
-            msn_resul += "clusters <b style='color: red;'>É DIFERENTE</b>"
-            msn_resul += " da do treino (p <= 0.05).<br>"
-        msn_resul += "<br>"
+            msn_resul += "Qui²: distribuição <b style='color: red;'>DIFERENTE</b> da do treino.<br>"
 
         if ari_score > 0.5:
-            msn_resul += "Conclusão 2: A partição projetada do Treino e o refit "
-            msn_resul += "<b style='color: green;'>SÃO SEMELHANTES</b>"
+            msn_resul += "ARI: projeção e refit <b style='color: green;'>SEMELHANTES</b>.<br><br>"
         else:
-            msn_resul += "Conclusão 2: A partição projetada do Treino e o refit "
-            msn_resul += "<b style='color: red;'>NÃO SÃO SEMELHANTES</b>"
-        msn_resul += f" (ARI = {ari_score:.4f}).<br><br>"
+            msn_resul += "ARI: projeção e refit <b style='color: red;'>DIFERENTES</b>.<br><br>"
 
         grafico = self.grafico_pca(
             X_novo=X_test, hue=labels_proj, titulo=f"{self.modelo} (projetado)"
