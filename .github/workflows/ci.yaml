@@ -22,4 +22,11 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Rodar testes
-        run: pytest --disable-warnings --cov=./app/src ./app/py_test
+        run: pytest --disable-warnings --cov=./app/src ./app/py_test --cov-report term-missing --cov-report html
+
+      - name: Publicar relatório de cobertura
+        if: always()                       # publica mesmo se algum teste falhar
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-cobertura
+          path: htmlcov/

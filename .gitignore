@@ -12,3 +12,7 @@ data/*
 # Python cache
 __pycache__/
 *.pyc
+
+# Testes e cobertura (htmlcov/ fica versionado para o professor)
+.coverage
+.pytest_cache/
